@@ -106,7 +106,7 @@ const AllJobs = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-primary  via-blue-600 to-blue-600 bg-clip-text text-transparent mb-4">
             Discover Opportunities
           </h1>
           <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
@@ -155,7 +155,7 @@ const AllJobs = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={toggleSort}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all shadow-md"
+              className="flex items-center justify-center gap-2 px-4 py-3 text-white bg-gradient-to-r from-primary to-blue-600 rounded-lg hover:from-primary/90 hover:to-blue-600/90 transition-all duration-200 shadow-md hover:shadow-lg"
             >
               <ArrowUpDown className="w-5 h-5" />
               <span className="hidden sm:inline">
@@ -188,7 +188,7 @@ const AllJobs = () => {
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-lg transition-all ${
                 viewMode === 'grid'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                  ? 'text-white bg-gradient-to-r from-primary to-blue-600 rounded-lg hover:from-primary/90 hover:to-blue-600/90 transition-all duration-200 shadow-md hover:shadow-lg'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
@@ -200,7 +200,7 @@ const AllJobs = () => {
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-lg transition-all ${
                 viewMode === 'list'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                  ? 'text-white bg-gradient-to-r from-primary to-blue-600 rounded-lg hover:from-primary/90 hover:to-blue-600/90 transition-all duration-200 shadow-md hover:shadow-lg'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >

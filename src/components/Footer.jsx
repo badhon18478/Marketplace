@@ -1,175 +1,228 @@
 import React from 'react';
 
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import {
+  Briefcase,
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Github,
+  Heart,
+} from 'lucide-react';
+
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
+  const footerLinks = {
+    platform: [
+      { name: 'Home', path: '/' },
+      { name: 'All Jobs', path: '/allJobs' },
+      { name: 'Add Job', path: '/add-job' },
+      { name: 'My Tasks', path: '/my-accepted-tasks' },
+    ],
+    categories: [
+      { name: 'Web Development', path: '/allJobs' },
+      { name: 'Digital Marketing', path: '/allJobs' },
+      { name: 'Graphics Designing', path: '/allJobs' },
+      { name: 'Content Writing', path: '/allJobs' },
+    ],
+    support: [
+      { name: 'Help Center', path: '#' },
+      { name: 'Contact Us', path: '#' },
+      { name: 'Privacy Policy', path: '#' },
+      { name: 'Terms of Service', path: '#' },
+    ],
+  };
+
+  const socialLinks = [
+    {
+      icon: <Facebook className="w-5 h-5" />,
+      url: '#',
+      color: 'hover:text-blue-600',
+    },
+    {
+      icon: <Twitter className="w-5 h-5" />,
+      url: '#',
+      color: 'hover:text-sky-500',
+    },
+    {
+      icon: <Instagram className="w-5 h-5" />,
+      url: '#',
+      color: 'hover:text-pink-600',
+    },
+    {
+      icon: <Linkedin className="w-5 h-5" />,
+      url: '#',
+      color: 'hover:text-blue-700',
+    },
+    {
+      icon: <Github className="w-5 h-5" />,
+      url: '#',
+      color: 'hover:text-gray-900',
+    },
+  ];
+
   return (
-    <footer className="bg-gray-900 text-white mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <svg
-                className="w-8 h-8 text-blue-400"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
-              </svg>
-              <span className="text-2xl font-bold text-blue-400">
+    <footer className="bg-gradient-to-b from-white to-gray-50 border-t border-gray-200">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
+          {/* Brand Column */}
+          <div className="lg:col-span-2">
+            <Link to="/" className="flex items-center gap-2 mb-4 group">
+              <div className="bg-gradient-to-r from-primary to-blue-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                <Briefcase className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
                 FreelanceHub
               </span>
-            </div>
-            <p className="text-gray-400 max-w-md">
-              Your trusted platform for connecting talented freelancers with
-              amazing opportunities. Find the perfect gig or hire the best
-              talent for your projects.
+            </Link>
+
+            <p className="text-gray-600 mb-4 leading-relaxed">
+              The most reliable freelance marketplace connecting talented
+              professionals with amazing opportunities worldwide.
             </p>
-            <div className="flex space-x-4 mt-6">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z" />
-                </svg>
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                </svg>
-              </a>
+
+            {/* Contact Info */}
+            <div className="space-y-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-primary" />
+                <span>support@freelancehub.com</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-primary" />
+                <span>+1 (555) 123-4567</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span>123 Business Street, NY 10001</span>
+              </div>
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Platform Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Platform</h3>
             <ul className="space-y-2">
-              <li>
-                <a
-                  href="/"
-                  className="text-gray-400 hover:text-white transition-colors"
+              {footerLinks.platform.map((link, index) => (
+                <motion.li
+                  key={index}
+                  whileHover={{ x: 5 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  Home
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/allJobs"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  All Jobs
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/addJob"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Post a Job
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/about"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  About Us
-                </a>
-              </li>
+                  <Link
+                    to={link.path}
+                    className="text-gray-600 hover:text-primary transition-colors inline-block"
+                  >
+                    {link.name}
+                  </Link>
+                </motion.li>
+              ))}
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Categories Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Popular Categories</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Categories</h3>
             <ul className="space-y-2">
-              <li>
-                <a
-                  href="/allJobs?category=Web Development"
-                  className="text-gray-400 hover:text-white transition-colors"
+              {footerLinks.categories.map((link, index) => (
+                <motion.li
+                  key={index}
+                  whileHover={{ x: 5 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  Web Development
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/allJobs?category=Digital Marketing"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  <Link
+                    to={link.path}
+                    className="text-gray-600 hover:text-primary transition-colors inline-block"
+                  >
+                    {link.name}
+                  </Link>
+                </motion.li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Support Links */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Support</h3>
+            <ul className="space-y-2">
+              {footerLinks.support.map((link, index) => (
+                <motion.li
+                  key={index}
+                  whileHover={{ x: 5 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  Digital Marketing
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/allJobs?category=Graphics Design"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Graphics Design
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/allJobs?category=Content Writing"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Content Writing
-                </a>
-              </li>
+                  <Link
+                    to={link.path}
+                    className="text-gray-600 hover:text-primary transition-colors inline-block"
+                  >
+                    {link.name}
+                  </Link>
+                </motion.li>
+              ))}
             </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              \u00a9 {currentYear} FreelanceHub. All rights reserved.
+        {/* Newsletter Section */}
+        <div className="bg-gradient-to-r from-primary/10 to-blue-600/10 rounded-2xl p-6 mb-8">
+          <div className="md:flex items-center justify-between">
+            <div className="mb-4 md:mb-0">
+              <h3 className="text-xl font-bold text-gray-800 mb-1">
+                Stay Updated!
+              </h3>
+              <p className="text-gray-600">
+                Subscribe to get the latest jobs and updates
+              </p>
+            </div>
+            <div className="flex gap-2 max-w-md">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary to-blue-600 rounded-lg hover:from-primary/90 hover:to-blue-600/90 transition-all shadow-md whitespace-nowrap"
+              >
+                Subscribe
+              </motion.button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="pt-8 border-t border-gray-200">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            {/* Copyright */}
+            <p className="text-gray-600 text-sm text-center md:text-left">
+              © {currentYear} FreelanceHub. Made with{' '}
+              <Heart className="inline w-4 h-4 text-red-500 fill-current" /> by
+              the FreelanceHub Team.
+              <br className="md:hidden" />
+              <span className="text-gray-500"> All rights reserved.</span>
             </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                Terms of Service
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                Contact Us
-              </a>
+
+            {/* Social Links */}
+            <div className="flex items-center gap-3">
+              {socialLinks.map((social, index) => (
+                <motion.a
+                  key={index}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ y: -3, scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className={`p-2 bg-white rounded-lg border border-gray-200 text-gray-600 ${social.color} transition-all shadow-sm hover:shadow-md`}
+                >
+                  {social.icon}
+                </motion.a>
+              ))}
             </div>
           </div>
         </div>
