@@ -1,28 +1,32 @@
-import { useState, useEffect, use } from 'react';
+import { use, useContext, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-// import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+// import { AuthContext } from '../contexts/AuthContext';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 import {
+  Briefcase,
   Calendar,
   User,
   Mail,
-  Briefcase,
+  CheckCircle,
   ArrowLeft,
-  Check,
   Clock,
-  MapPin,
+  Share2,
+  Bookmark,
+  AlertCircle,
 } from 'lucide-react';
-import axios from 'axios';
+import Navbar from '../components/Navber/Navbar';
+import Footer from '../components/Footer';
 import { AuthContext } from '../AuthContext';
 
 const JobDetails = () => {
-  const { id } = useParams();
   const { user } = use(AuthContext);
+  const { id } = useParams();
   const navigate = useNavigate();
+
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [accepting, setAccepting] = useState(false);
 
   useEffect(() => {
@@ -32,17 +36,11 @@ const JobDetails = () => {
   const fetchJobDetails = async () => {
     try {
       setLoading(true);
-      setError(null);
-      console.log('Fetching job details for ID:', id);
       const response = await axios.get(`http://localhost:5000/api/jobs/${id}`);
-      console.log('Job details response:', response.data);
       setJob(response.data);
     } catch (error) {
-      console.error('Error fetching job details:', error);
-      setError(error.response?.data?.message || 'Failed to load job details');
-      toast.error(
-        error.response?.data?.message || 'Failed to load job details'
-      );
+      console.error('Error fetching job:', error);
+      toast.error('Failed to load job details');
     } finally {
       setLoading(false);
     }
@@ -50,180 +48,346 @@ const JobDetails = () => {
 
   const handleAcceptJob = async () => {
     if (!user) {
-      toast.error('Please login to accept this job');
+      toast.error('Please login to accept jobs');
       navigate('/login');
       return;
     }
 
-    if (user.email === job.userEmail) {
-      toast.error('You cannot accept your own job');
+    if (job.userEmail === user.email) {
+      toast.error('You cannot accept your own job posting');
       return;
     }
 
     try {
       setAccepting(true);
-      await axios.put(`http://localhost:5000/api/jobs/${id}/accept`, {
+
+      const acceptedTask = {
+        jobId: job._id,
+        jobTitle: job.title,
+        jobCategory: job.category,
+        jobSummary: job.summary,
+        coverImage: job.coverImage,
+        jobPoster: job.userEmail,
+        jobPosterName: job.postedBy,
         acceptedBy: user.email,
-      });
-      toast.success('Job accepted successfully');
-      navigate('/my-accepted-tasks');
+        acceptedByName: user.displayName || 'Anonymous',
+      };
+
+      await axios.post(
+        'http://localhost:5000/api/accepted-tasks',
+        acceptedTask
+      );
+
+      toast.success('Job accepted successfully! 🎉');
+
+      setTimeout(() => {
+        navigate('/my-accepted-tasks');
+      }, 1500);
     } catch (error) {
       console.error('Error accepting job:', error);
-      toast.error(error.response?.data?.message || 'Failed to accept job');
+      toast.error('Failed to accept job. Please try again.');
     } finally {
       setAccepting(false);
     }
   };
 
-  // Check if user can accept this job
-  const canAcceptJob =
-    user &&
-    user.email !== job?.userEmail &&
-    (job?.status === 'open' || !job?.status);
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: job.title,
+          text: job.summary,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.log('Share cancelled');
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard!');
+    }
+  };
+
+  const getCategoryColor = category => {
+    const colors = {
+      'Web Development': 'from-blue-500 to-cyan-500',
+      'Digital Marketing': 'from-purple-500 to-pink-500',
+      'Graphics Designing': 'from-orange-500 to-red-500',
+      'Content Writing': 'from-green-500 to-emerald-500',
+      'Video Editing': 'from-yellow-500 to-amber-500',
+      default: 'from-gray-500 to-slate-500',
+    };
+    return colors[category] || colors.default;
+  };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full"
+          />
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  if (error || !job) {
+  if (!job) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error || 'Job not found'}
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+        <Navbar />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-12 max-w-md mx-auto"
+          >
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+              Job Not Found
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              The job you're looking for doesn't exist or has been removed.
+            </p>
+            <button
+              onClick={() => navigate('/alljobs')}
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all"
+            >
+              Back to All Jobs
+            </button>
+          </motion.div>
         </div>
+        <Footer />
       </div>
     );
   }
+
+  const isOwnJob = user?.email === job.userEmail;
 
   return (
-    <div className="min-h-screen py-12">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center text-blue-600 hover:text-blue-800 mb-6"
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            Back to Jobs
-          </button>
-        </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <Navbar />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white rounded-lg shadow-lg overflow-hidden"
+      <div className="container mx-auto px-4 py-8">
+        {/* Back Button */}
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => navigate('/alljobs')}
+          className="flex items-center gap-2 mb-6 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors group"
         >
-          <div className="h-64 md:h-96 overflow-hidden">
-            <img
-              src={
-                job.coverImage || 'https://picsum.photos/seed/job/800/400.jpg'
-              }
-              alt={job.title}
-              className="w-full h-full object-cover"
-            />
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-semibold">Back to All Jobs</span>
+        </motion.button>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Hero Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden"
+            >
+              {/* Cover Image */}
+              <div className="relative h-80 overflow-hidden">
+                <img
+                  src={job.coverImage}
+                  alt={job.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+                {/* Category Badge */}
+                <div className="absolute top-6 right-6">
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: 'spring', duration: 0.6 }}
+                    className={`px-6 py-2.5 rounded-full text-sm font-bold text-white backdrop-blur-md bg-gradient-to-r ${getCategoryColor(
+                      job.category
+                    )} shadow-2xl border-2 border-white/20`}
+                  >
+                    {job.category}
+                  </motion.div>
+                </div>
+
+                {/* Title Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-8">
+                  <motion.h1
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-4xl font-bold text-white mb-2"
+                  >
+                    {job.title}
+                  </motion.h1>
+                </div>
+              </div>
+
+              {/* Job Description */}
+              <div className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <Briefcase className="w-6 h-6 text-purple-600" />
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                    Job Description
+                  </h2>
+                </div>
+
+                <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed whitespace-pre-wrap">
+                  {job.summary}
+                </p>
+
+                {/* Tags or Additional Info */}
+                <div className="flex flex-wrap gap-2 mt-6">
+                  <span className="px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full text-sm font-semibold">
+                    Remote
+                  </span>
+                  <span className="px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-sm font-semibold">
+                    Freelance
+                  </span>
+                  <span className="px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full text-sm font-semibold">
+                    Flexible Hours
+                  </span>
+                </div>
+              </div>
+            </motion.div>
           </div>
 
-          <div className="p-6 md:p-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2 md:mb-0">
-                {job.title}
-              </h1>
-              <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                {job.category}
-              </span>
-            </div>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Job Info Card */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 space-y-6 sticky top-24"
+            >
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4">
+                Job Information
+              </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="flex items-center text-gray-600">
-                <User size={20} className="mr-2 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-500">Posted By</p>
-                  <p className="font-medium">{job.postedBy}</p>
+              {/* Posted By */}
+              <div className="flex items-start gap-4">
+                <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-xl">
+                  <User className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
-              </div>
-
-              <div className="flex items-center text-gray-600">
-                <Mail size={20} className="mr-2 text-gray-500" />
                 <div>
-                  <p className="text-sm text-gray-500">Contact</p>
-                  <p className="font-medium">{job.userEmail}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center text-gray-600">
-                <Calendar size={20} className="mr-2 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-500">Posted Date</p>
-                  <p className="font-medium">
-                    {new Date(job.postedDate).toLocaleDateString()}
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    Posted By
+                  </p>
+                  <p className="font-semibold text-gray-800 dark:text-white">
+                    {job.postedBy}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center text-gray-600">
-                <Briefcase size={20} className="mr-2 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-500">Status</p>
-                  <p className="font-medium capitalize">
-                    {job.status || 'Open'}
+              {/* Email */}
+              <div className="flex items-start gap-4">
+                <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-xl">
+                  <Mail className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    Contact
+                  </p>
+                  <p className="font-semibold text-gray-800 dark:text-white truncate">
+                    {job.userEmail}
                   </p>
                 </div>
               </div>
-            </div>
 
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-3">
-                Job Description
-              </h2>
-              <p className="text-gray-700 whitespace-pre-line">{job.summary}</p>
-            </div>
+              {/* Posted Date */}
+              <div className="flex items-start gap-4">
+                <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-xl">
+                  <Calendar className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    Posted Date
+                  </p>
+                  <p className="font-semibold text-gray-800 dark:text-white">
+                    {new Date(job.postedDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
+                </div>
+              </div>
 
-            {/* Accept button section */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              {!user ? (
-                <button
-                  onClick={() => navigate('/login')}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-300"
-                >
-                  Login to Accept This Job
-                </button>
-              ) : user.email === job.userEmail ? (
-                <div className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-md">
-                  You cannot accept your own job
-                </div>
-              ) : job.status !== 'open' && job.status ? (
-                <div className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-md">
-                  This job is no longer available
-                </div>
-              ) : (
-                <button
-                  onClick={handleAcceptJob}
-                  disabled={accepting}
-                  className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors duration-300 flex items-center justify-center disabled:opacity-50"
-                >
-                  {accepting ? (
-                    'Processing...'
+              {/* Action Buttons */}
+              <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <AnimatePresence mode="wait">
+                  {isOwnJob ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800 rounded-xl p-4 text-center"
+                    >
+                      <AlertCircle className="w-8 h-8 text-yellow-600 dark:text-yellow-400 mx-auto mb-2" />
+                      <p className="font-semibold text-yellow-800 dark:text-yellow-300 text-sm">
+                        This is your own job posting
+                      </p>
+                      <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                        You cannot accept your own jobs
+                      </p>
+                    </motion.div>
                   ) : (
-                    <>
-                      <Check size={20} className="mr-2" />
-                      Accept This Job
-                    </>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleAcceptJob}
+                      disabled={accepting}
+                      className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl ${
+                        accepting
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
+                      }`}
+                    >
+                      {accepting ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{
+                              duration: 1,
+                              repeat: Infinity,
+                              ease: 'linear',
+                            }}
+                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                          />
+                          Accepting...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-6 h-6" />
+                          Accept This Job
+                        </>
+                      )}
+                    </motion.button>
                   )}
-                </button>
-              )}
-            </div>
+                </AnimatePresence>
+
+                {/* Share Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleShare}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                >
+                  <Share2 className="w-5 h-5" />
+                  Share Job
+                </motion.button>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
       </div>
+
+      <Footer />
     </div>
   );
 };
