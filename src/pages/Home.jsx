@@ -133,6 +133,7 @@ const Home = () => {
 
   return (
     <div>
+      <title>Home</title>
       <Navbar />
       <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10">
         {/* Hero Section */}
