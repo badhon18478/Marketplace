@@ -1,31 +1,31 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 // import { AuthContext } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+// import axios from 'axios';
 import toast from 'react-hot-toast';
 import { CheckCircle, X, Briefcase, User, Calendar } from 'lucide-react';
 import Navbar from '../components/Navber/Navbar';
 import Footer from '../components/Footer';
 import { AuthContext } from '../AuthContext';
-import { use } from 'react';
+import useAxiosSecure from '../hooks/useAxiosSecure';
 
 const MyAcceptedTasks = () => {
-  const { user } = use(AuthContext);
+  const { user } = useContext(AuthContext);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
-
+  const axiosSecure = useAxiosSecure();
   useEffect(() => {
     if (user?.email) {
       fetchAcceptedTasks();
     }
-  }, [user]);
+  }, [user, axiosSecure]);
 
   const fetchAcceptedTasks = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:5000/api/accepted-tasks/${user.email}`
+      const response = await axiosSecure.get(
+        `/api/accepted-tasks/${user.email}`
       );
       console.log('Fetched tasks:', response.data);
       setTasks(response.data);
@@ -40,7 +40,7 @@ const MyAcceptedTasks = () => {
   const handleDone = async taskId => {
     try {
       setDeletingId(taskId);
-      await axios.delete(`http://localhost:5000/api/accepted-tasks/${taskId}`);
+      await axiosSecure.delete(`/api/accepted-tasks/${taskId}`);
 
       // Remove from UI immediately
       setTasks(prevTasks => prevTasks.filter(task => task._id !== taskId));
@@ -57,7 +57,7 @@ const MyAcceptedTasks = () => {
   const handleCancel = async taskId => {
     try {
       setDeletingId(taskId);
-      await axios.delete(`http://localhost:5000/api/accepted-tasks/${taskId}`);
+      await axiosSecure.delete(`/api/accepted-tasks/${taskId}`);
 
       // Remove from UI immediately
       setTasks(prevTasks => prevTasks.filter(task => task._id !== taskId));

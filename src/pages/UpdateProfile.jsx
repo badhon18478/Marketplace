@@ -1,12 +1,12 @@
-import { use, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 
 import Navbar from '../components/Navber/Navbar';
 import Footer from '../components/Footer';
 
 const UpdateProfile = () => {
-  const { user, updateUserProfile } = use(AuthContext);
+  const { user, updateUserProfile } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     name: user?.displayName || '',
     photoURL: user?.photoURL || '',

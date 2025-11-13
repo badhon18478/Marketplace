@@ -1,4 +1,4 @@
-import { use, useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 // import { AuthContext } from '../contexts/AuthContext';
@@ -19,24 +19,25 @@ import {
 import Navbar from '../components/Navber/Navbar';
 import Footer from '../components/Footer';
 import { AuthContext } from '../AuthContext';
+import useAxiosSecure from '../hooks/useAxiosSecure';
 
 const JobDetails = () => {
-  const { user } = use(AuthContext);
+  const { user } = useContext(AuthContext);
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
-
+  const axiosSecure = useAxiosSecure();
   useEffect(() => {
     fetchJobDetails();
-  }, [id]);
+  }, [id, axiosSecure]);
 
   const fetchJobDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:5000/api/jobs/${id}`);
+      const response = await axiosSecure.get(`/api/jobs/${id}`);
       setJob(response.data);
     } catch (error) {
       console.error('Error fetching job:', error);
@@ -73,10 +74,7 @@ const JobDetails = () => {
         acceptedByName: user.displayName || 'Anonymous',
       };
 
-      await axios.post(
-        'http://localhost:5000/api/accepted-tasks',
-        acceptedTask
-      );
+      await axiosSecure.post('/api/accepted-tasks', acceptedTask);
 
       toast.success('Job accepted successfully! 🎉');
 

@@ -13,6 +13,7 @@ import {
 import Navbar from '../components/Navber/Navbar';
 import Footer from '../components/Footer';
 import JobCard from '../components/JobCard';
+import useAxiosSecure from '../hooks/useAxiosSecure';
 
 const AllJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -22,7 +23,7 @@ const AllJobs = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-
+  const axiosSecure = useAxiosSecure();
   const categories = [
     'All',
     'Web Development',
@@ -34,7 +35,7 @@ const AllJobs = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [sortOrder]);
+  }, [sortOrder, axiosSecure]);
 
   useEffect(() => {
     filterJobs();
@@ -43,9 +44,7 @@ const AllJobs = () => {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:5000/api/jobs?sort=${sortOrder}`
-      );
+      const response = await axiosSecure.get(`/api/jobs?sort=${sortOrder}`);
       setJobs(response.data);
       setFilteredJobs(response.data);
     } catch (error) {

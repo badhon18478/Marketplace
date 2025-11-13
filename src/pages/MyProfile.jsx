@@ -1,11 +1,11 @@
-import { use } from 'react';
-import { Link } from 'react-router';
+import { useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import Navbar from '../components/Navber/Navbar';
 import Footer from '../components/Footer';
 
 const MyProfile = () => {
-  const { user } = use(AuthContext);
+  const { user } = useContext(AuthContext);
 
   return (
     <div>

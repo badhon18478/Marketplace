@@ -3,7 +3,6 @@ import Navbar from '../components/Navber/Navbar';
 import { Outlet, useLocation } from 'react-router';
 import Banner from '../components/Banner';
 import Footer from '../components/Footer';
-// import PopularGames from '../components/PopularGames';
 
 const MainLayout = () => {
   const [loading, setLoading] = useState(false);

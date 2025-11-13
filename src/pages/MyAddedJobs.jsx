@@ -1,8 +1,8 @@
-import { use, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 // import { AuthContext } from '../contexts/AuthContext';
-import axios from 'axios';
+// import axios from 'axios';
 import toast from 'react-hot-toast';
 import {
   Briefcase,
@@ -16,26 +16,25 @@ import {
 import Navbar from '../components/Navber/Navbar';
 import Footer from '../components/Footer';
 import { AuthContext } from '../AuthContext';
+import useAxiosSecure from '../hooks/useAxiosSecure';
 
 const MyAddedJobs = () => {
-  const { user } = use(AuthContext);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
-
+  const axiosSecure = useAxiosSecure();
   useEffect(() => {
     if (user?.email) {
       fetchMyJobs();
     }
-  }, [user]);
+  }, [user, axiosSecure]);
 
   const fetchMyJobs = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:5000/api/jobs/user/${user.email}`
-      );
+      const response = await axiosSecure.get(`/api/jobs/user/${user.email}`);
       setJobs(response.data);
     } catch (error) {
       console.error('Error fetching jobs:', error);
@@ -53,7 +52,7 @@ const MyAddedJobs = () => {
     ) {
       try {
         setDeletingId(jobId);
-        await axios.delete(`http://localhost:5000/api/jobs/${jobId}`);
+        await axiosSecure.delete(`/api/jobs/${jobId}`);
         setJobs(jobs.filter(job => job._id !== jobId));
         toast.success('Job deleted successfully');
       } catch (error) {

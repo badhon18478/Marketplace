@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -14,12 +14,13 @@ import {
 import Navbar from '../components/Navber/Navbar';
 import Footer from '../components/Footer';
 import { AuthContext } from '../AuthContext';
+import useAxiosSecure from '../hooks/useAxiosSecure';
 
 const UpdateJob = () => {
-  const { user } = use(AuthContext);
+  const { user } = useContext(AuthContext);
   const { id } = useParams();
   const navigate = useNavigate();
-
+  const axiosSecure = useAxiosSecure();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -39,12 +40,12 @@ const UpdateJob = () => {
 
   useEffect(() => {
     fetchJobDetails();
-  }, [id]);
+  }, [id, axiosSecure]);
 
   const fetchJobDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:5000/api/jobs/${id}`);
+      const response = await axiosSecure.get(`/api/jobs/${id}`);
       const job = response.data;
 
       // Check if user is the owner
@@ -82,7 +83,7 @@ const UpdateJob = () => {
     try {
       setSubmitting(true);
 
-      await axios.put(`http://localhost:5000/api/jobs/${id}`, formData);
+      await axiosSecure.put(`/api/jobs/${id}`, formData);
 
       toast.success('Job updated successfully! 🎉');
 

@@ -1,11 +1,11 @@
-import React, { use, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../AuthContext';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navber/Navbar';
 import Footer from '../components/Footer';
 
 const ForgetPassword = () => {
-  const { resetPassword } = use(AuthContext);
+  const { resetPassword } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

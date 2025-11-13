@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 // import { AuthContext } from '../contexts/AuthContext';
@@ -16,10 +16,9 @@ import {
 import Navbar from '../components/Navber/Navbar';
 import Footer from '../components/Footer';
 import { AuthContext } from '../AuthContext';
-import { use } from 'react';
 
 const AddJob = () => {
-  const { user } = use(AuthContext);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
 
