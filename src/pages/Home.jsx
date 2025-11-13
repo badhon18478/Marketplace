@@ -135,7 +135,7 @@ const Home = () => {
     <div>
       <title>Home</title>
       <Navbar />
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+      <div className=" mt-4 relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10">
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-hero-gradient">
           {/* Background Decorations */}

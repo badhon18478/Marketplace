@@ -16,12 +16,14 @@ import {
 import Navbar from '../components/Navber/Navbar';
 import Footer from '../components/Footer';
 import { AuthContext } from '../AuthContext';
+import Swal from 'sweetalert2';
+import useAxiosSecure from '../hooks/useAxiosSecure';
 
 const AddJob = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-
+  const axiosSecure = useAxiosSecure();
   const [formData, setFormData] = useState({
     title: '',
     category: 'Web Development',
@@ -69,9 +71,12 @@ const AddJob = () => {
         postedDate: new Date().toISOString(),
       };
 
-      await axios.post('http://localhost:5000/api/jobs', jobData);
-
-      toast.success('Job posted successfully! 🎉');
+      await axiosSecure.post('/api/jobs', jobData);
+      Swal.fire({
+        title: 'Good job!',
+        text: 'your job has been posted successfully',
+        icon: 'success',
+      });
 
       // Reset form
       setFormData({
