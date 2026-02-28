@@ -1,132 +1,102 @@
-import { useContext } from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../../AuthContext';
-import { Briefcase, CheckSquare, Clock, Star, TrendingUp, Plus, ArrowRight } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
-const UserOverview = () => {
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const COLORS = ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#a855f7', '#ec4899'];
+
+const Card = ({ label, value, icon, color }) => (
+  <div style={{
+    background: '#161b27', borderRadius: 14, padding: '20px 24px',
+    border: '1px solid #21262d', display: 'flex', alignItems: 'center', gap: 16,
+  }}>
+    <div style={{
+      width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+      background: color + '22',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
+    }}>{icon}</div>
+    <div>
+      <p style={{ color: '#8b949e', fontSize: 12, margin: 0, textTransform: 'uppercase', letterSpacing: 1 }}>{label}</p>
+      <p style={{ color: '#e6edf3', fontSize: 28, fontWeight: 700, margin: 0 }}>{value ?? '—'}</p>
+    </div>
+  </div>
+);
+
+export default function UserOverview() {
   const { user } = useContext(AuthContext);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
-    { label: 'Jobs Posted',     value: '12',  icon: Briefcase,   color: 'from-primary to-blue-600',    bg: 'bg-purple-50 dark:bg-purple-900/20',  text: 'text-primary' },
-    { label: 'Tasks Accepted',  value: '8',   icon: CheckSquare, color: 'from-green-500 to-green-600',  bg: 'bg-green-50 dark:bg-green-900/20',    text: 'text-green-600' },
-    { label: 'In Progress',     value: '3',   icon: Clock,       color: 'from-yellow-500 to-orange-500',bg: 'bg-yellow-50 dark:bg-yellow-900/20',  text: 'text-yellow-600' },
-    { label: 'Avg Rating',      value: '4.8', icon: Star,        color: 'from-pink-500 to-rose-500',    bg: 'bg-pink-50 dark:bg-pink-900/20',      text: 'text-pink-600' },
-  ];
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch(`${API}/api/dashboard/user-stats/${user.email}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setStats(await res.json());
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
+    })();
+  }, [user]);
 
-  const recentJobs = [
-    { title: 'React Developer Needed',   budget: '$500',  bids: 12, status: 'open',   date: 'Mar 1' },
-    { title: 'Logo Design for Startup',  budget: '$150',  bids: 7,  status: 'open',   date: 'Feb 28' },
-    { title: 'SEO Content Writer',       budget: '$80',   bids: 23, status: 'closed', date: 'Feb 20' },
-    { title: 'Mobile App UI/UX',         budget: '$800',  bids: 5,  status: 'open',   date: 'Mar 2' },
-  ];
-
-  const recentTasks = [
-    { title: 'Build E-commerce Site',  client: 'Mark W.',   deadline: 'Mar 10', status: 'in-progress' },
-    { title: 'Create Brand Identity',  client: 'Sarah J.',  deadline: 'Mar 15', status: 'pending' },
-    { title: 'SEO Audit Report',       client: 'James C.',  deadline: 'Feb 28', status: 'completed' },
-  ];
-
-  const statusColors = {
-    open:         'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    closed:       'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
-    'in-progress':'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    pending:      'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    completed:    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-          className="text-2xl font-bold text-gray-900 dark:text-white">
-          Welcome back, {user?.displayName?.split(' ')[0] || 'User'} 👋
-        </motion.h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Here is what is happening with your account today.</p>
-      </div>
-
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {stats.map((s, i) => (
-          <motion.div key={s.label}
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-            className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow">
-            <div className={`w-11 h-11 rounded-xl ${s.bg} flex items-center justify-center mb-3`}>
-              <s.icon className={`w-5 h-5 ${s.text}`} />
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
-          </motion.div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-            <h2 className="font-bold text-gray-900 dark:text-white">My Recent Jobs</h2>
-            <Link to="/dashboard/my-jobs" className="text-xs font-semibold text-primary hover:text-blue-600 flex items-center gap-1">
-              View All <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="divide-y divide-gray-50 dark:divide-gray-800">
-            {recentJobs.map(job => (
-              <div key={job.title} className="flex items-center gap-3 px-5 py-3.5 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center flex-shrink-0">
-                  <Briefcase className="w-4 h-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{job.title}</p>
-                  <p className="text-xs text-gray-400">{job.bids} bids · {job.date}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">{job.budget}</p>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColors[job.status]}`}>{job.status}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-          className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-            <h2 className="font-bold text-gray-900 dark:text-white">Accepted Tasks</h2>
-            <Link to="/dashboard/accepted-tasks" className="text-xs font-semibold text-primary hover:text-blue-600 flex items-center gap-1">
-              View All <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="divide-y divide-gray-50 dark:divide-gray-800">
-            {recentTasks.map(task => (
-              <div key={task.title} className="flex items-center gap-3 px-5 py-3.5 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 flex items-center justify-center flex-shrink-0">
-                  <CheckSquare className="w-4 h-4 text-green-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{task.title}</p>
-                  <p className="text-xs text-gray-400">{task.client} · Due {task.deadline}</p>
-                </div>
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${statusColors[task.status]}`}>{task.status}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-        className="bg-gradient-to-r from-primary to-blue-600 rounded-2xl p-6 text-white shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold">Ready to find new work?</h3>
-            <p className="text-purple-100 text-sm mt-1">Browse 1,200+ active job listings</p>
-          </div>
-          <Link to="/allJobs"
-            className="flex items-center gap-2 px-5 py-2.5 bg-white text-primary font-semibold text-sm rounded-xl hover:bg-purple-50 transition-colors shadow-md">
-            Browse Jobs <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </motion.div>
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
+      <div style={{ width: 48, height: 48, border: '4px solid #3b82f6', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
-};
 
-export default UserOverview;
+  const taskStatus = stats?.taskStatusStats?.map(s => ({ name: s._id, value: s.count })) || [];
+  const jobsByCategory = stats?.myJobsByCategory?.map(c => ({ name: c._id, value: c.count })) || [];
+
+  return (
+    <div>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ color: '#e6edf3', fontSize: 24, fontWeight: 700, margin: 0 }}>
+          Welcome back, {user?.displayName?.split(' ')[0] || 'there'} 👋
+        </h1>
+        <p style={{ color: '#8b949e', margin: '4px 0 0', fontSize: 13 }}>Here's your activity summary.</p>
+      </div>
+
+      {/* Stat Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16, marginBottom: 28 }}>
+        <Card label="My Jobs"        value={stats?.myJobs}     icon="💼" color="#3b82f6" />
+        <Card label="Accepted Tasks" value={stats?.myAccepted} icon="✅" color="#10b981" />
+        <Card label="My Reviews"     value={stats?.myReviews}  icon="⭐" color="#f59e0b" />
+      </div>
+
+      {/* Charts */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div style={{ background: '#161b27', borderRadius: 14, padding: 24, border: '1px solid #21262d' }}>
+          <h3 style={{ color: '#e6edf3', margin: '0 0 20px', fontSize: 14, fontWeight: 600 }}>Task Status Breakdown</h3>
+          {taskStatus.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie data={taskStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}>
+                  {taskStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ background: '#21262d', border: 'none', borderRadius: 8, color: '#fff' }} />
+                <Legend wrapperStyle={{ color: '#8b949e', fontSize: 12 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : <p style={{ color: '#8b949e', textAlign: 'center', marginTop: 60 }}>No accepted tasks yet</p>}
+        </div>
+
+        <div style={{ background: '#161b27', borderRadius: 14, padding: 24, border: '1px solid #21262d' }}>
+          <h3 style={{ color: '#e6edf3', margin: '0 0 20px', fontSize: 14, fontWeight: 600 }}>My Jobs by Category</h3>
+          {jobsByCategory.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={jobsByCategory}>
+                <XAxis dataKey="name" tick={{ fill: '#8b949e', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#8b949e', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: '#21262d', border: 'none', borderRadius: 8, color: '#fff' }} />
+                <Bar dataKey="value" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Jobs" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <p style={{ color: '#8b949e', textAlign: 'center', marginTop: 60 }}>No jobs posted yet</p>}
+        </div>
+      </div>
+    </div>
+  );
+}

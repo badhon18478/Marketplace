@@ -1,263 +1,154 @@
 import { useState, useContext } from 'react';
-import { motion } from 'framer-motion';
 import { AuthContext } from '../../AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
-import { User, Lock, Bell, Palette, Shield, ChevronRight, Save, Eye, EyeOff, Check, Moon, Sun } from 'lucide-react';
 
-const sections = [
-  { id: 'account',        label: 'Account',        icon: User    },
-  { id: 'password',       label: 'Password',        icon: Lock    },
-  { id: 'notifications',  label: 'Notifications',   icon: Bell    },
-  { id: 'appearance',     label: 'Appearance',      icon: Palette },
-  { id: 'privacy',        label: 'Privacy',         icon: Shield  },
-];
+const inp = { width: '100%', background: '#0d1117', border: '1px solid #21262d', borderRadius: 10, color: '#e6edf3', padding: '10px 14px', fontSize: 13, outline: 'none', boxSizing: 'border-box' };
 
-const Toggle = ({ checked, onChange }) => (
-  <button onClick={() => onChange(!checked)}
-    className={`relative w-11 h-6 rounded-full transition-all duration-300 focus:outline-none ${checked ? 'bg-gradient-to-r from-primary to-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}>
-    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
-  </button>
+const Section = ({ title, desc, children }) => (
+  <div style={{ background: '#161b27', borderRadius: 16, border: '1px solid #21262d', padding: 24, marginBottom: 16 }}>
+    <h3 style={{ color: '#e6edf3', fontSize: 15, fontWeight: 700, margin: '0 0 4px' }}>{title}</h3>
+    {desc && <p style={{ color: '#8b949e', fontSize: 13, margin: '0 0 20px' }}>{desc}</p>}
+    {children}
+  </div>
 );
 
-const DashboardSettings = () => {
+const Toggle = ({ label, desc, checked, onChange }) => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #21262d' }}>
+    <div>
+      <p style={{ color: '#e6edf3', fontSize: 13, fontWeight: 500, margin: 0 }}>{label}</p>
+      {desc && <p style={{ color: '#8b949e', fontSize: 12, margin: '2px 0 0' }}>{desc}</p>}
+    </div>
+    <div onClick={onChange} style={{
+      width: 44, height: 24, borderRadius: 12, cursor: 'pointer',
+      background: checked ? '#3b82f6' : '#21262d',
+      position: 'relative', transition: 'background .2s', flexShrink: 0,
+    }}>
+      <div style={{
+        width: 18, height: 18, borderRadius: '50%', background: '#fff',
+        position: 'absolute', top: 3, left: checked ? 23 : 3,
+        transition: 'left .2s',
+      }} />
+    </div>
+  </div>
+);
+
+export default function DashboardSettings() {
   const { user } = useContext(AuthContext);
-  const { theme, toggleTheme } = useTheme();
-  const [active, setActive] = useState('account');
-  const [saved, setSaved] = useState(false);
-  const [showPass, setShowPass] = useState({ current: false, new: false, confirm: false });
-
-  const [account, setAccount] = useState({
-    displayName: user?.displayName || '',
-    email: user?.email || '',
-    phone: '+880 1234 567890',
-    location: 'Dhaka, Bangladesh',
-    bio: 'Full-stack developer with 5+ years experience.',
-  });
-
   const [notifications, setNotifications] = useState({
-    emailNewBid:     true,
-    emailMessages:   true,
-    emailUpdates:    false,
-    pushNewBid:      true,
-    pushMessages:    true,
-    weeklyDigest:    true,
+    email: true, jobAlerts: true, taskUpdates: false, newsletter: false,
   });
+  const [passwords, setPasswords] = useState({ current: '', newPass: '', confirm: '' });
+  const [saved, setSaved] = useState('');
 
-  const [privacy, setPrivacy] = useState({
-    profilePublic:   true,
-    showEmail:       false,
-    showPhone:       false,
-    showOnline:      true,
-  });
-
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  const handleSaveNotifications = () => {
+    setSaved('notifications');
+    setTimeout(() => setSaved(''), 2500);
   };
 
-  const inputClass = "w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all";
-  const labelClass = "block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5";
+  const handleChangePassword = (e) => {
+    e.preventDefault();
+    if (passwords.newPass !== passwords.confirm) return alert('New passwords do not match');
+    if (passwords.newPass.length < 6) return alert('Password must be at least 6 characters');
+    setSaved('password');
+    setPasswords({ current: '', newPass: '', confirm: '' });
+    setTimeout(() => setSaved(''), 2500);
+  };
+
+  const Toast = ({ msg }) => (
+    <div style={{ background: '#10b98122', border: '1px solid #10b98144', borderRadius: 10, padding: '10px 16px', color: '#34d399', fontSize: 13, fontWeight: 600, marginBottom: 16 }}>
+      ✅ {msg}
+    </div>
+  );
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between">
-        <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-          className="text-2xl font-bold text-gray-900 dark:text-white">Settings</motion.h1>
-        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleSave}
-          className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all shadow-md ${
-            saved ? 'bg-green-500 text-white' : 'bg-gradient-to-r from-primary to-blue-600 text-white hover:shadow-lg'
-          }`}>
-          {saved ? <><Check className="w-4 h-4" /> Saved!</> : <><Save className="w-4 h-4" /> Save Changes</>}
-        </motion.button>
+    <div style={{ maxWidth: 640 }}>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ color: '#e6edf3', fontSize: 22, fontWeight: 700, margin: 0 }}>Settings</h1>
+        <p style={{ color: '#8b949e', margin: '4px 0 0', fontSize: 13 }}>Manage your account preferences</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Sidebar */}
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
-          className="lg:col-span-1 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-3 h-fit">
-          {sections.map(s => (
-            <button key={s.id} onClick={() => setActive(s.id)}
-              className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 mb-1 group ${
-                active === s.id
-                  ? 'bg-gradient-to-r from-primary to-blue-600 text-white shadow-md'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-gray-800 hover:text-primary'
-              }`}>
-              <s.icon className={`w-4 h-4 flex-shrink-0 ${active === s.id ? 'text-white' : 'text-gray-400 group-hover:text-primary'}`} />
-              <span className="flex-1 text-left">{s.label}</span>
-              <ChevronRight className={`w-3.5 h-3.5 ${active === s.id ? 'text-white' : 'text-gray-300 dark:text-gray-600'}`} />
+      {saved === 'notifications' && <Toast msg="Notification preferences saved!" />}
+      {saved === 'password' && <Toast msg="Password changed successfully!" />}
+
+      {/* Account Info */}
+      <Section title="Account Information" desc="Your basic account details">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0' }}>
+          <img
+            src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.displayName || 'U')}&background=3b82f6&color=fff`}
+            alt="avatar"
+            style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover' }}
+          />
+          <div>
+            <p style={{ color: '#e6edf3', fontWeight: 600, margin: 0 }}>{user?.displayName || 'User'}</p>
+            <p style={{ color: '#8b949e', fontSize: 13, margin: '2px 0 0' }}>{user?.email}</p>
+            <p style={{ color: '#3b82f6', fontSize: 11, margin: '4px 0 0', fontWeight: 600 }}>
+              {user?.providerData?.[0]?.providerId === 'google.com' ? '🔗 Google Account' : '🔐 Email & Password'}
+            </p>
+          </div>
+        </div>
+      </Section>
+
+      {/* Notifications */}
+      <Section title="Notifications" desc="Choose what updates you want to receive">
+        <Toggle
+          label="Email Notifications" desc="Receive updates via email"
+          checked={notifications.email}
+          onChange={() => setNotifications(p => ({ ...p, email: !p.email }))}
+        />
+        <Toggle
+          label="Job Alerts" desc="Get notified about new job postings"
+          checked={notifications.jobAlerts}
+          onChange={() => setNotifications(p => ({ ...p, jobAlerts: !p.jobAlerts }))}
+        />
+        <Toggle
+          label="Task Updates" desc="Notifications when task status changes"
+          checked={notifications.taskUpdates}
+          onChange={() => setNotifications(p => ({ ...p, taskUpdates: !p.taskUpdates }))}
+        />
+        <Toggle
+          label="Newsletter" desc="Receive our weekly newsletter"
+          checked={notifications.newsletter}
+          onChange={() => setNotifications(p => ({ ...p, newsletter: !p.newsletter }))}
+        />
+        <button onClick={handleSaveNotifications} style={{ marginTop: 16, background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 20px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+          Save Preferences
+        </button>
+      </Section>
+
+      {/* Change Password */}
+      {user?.providerData?.[0]?.providerId !== 'google.com' && (
+        <Section title="Change Password" desc="Update your account password">
+          <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {[
+              { label: 'Current Password', key: 'current', placeholder: '••••••••' },
+              { label: 'New Password',     key: 'newPass', placeholder: 'Min. 6 characters' },
+              { label: 'Confirm Password', key: 'confirm', placeholder: 'Repeat new password' },
+            ].map(f => (
+              <div key={f.key}>
+                <label style={{ color: '#8b949e', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 }}>{f.label}</label>
+                <input
+                  type="password" style={inp} placeholder={f.placeholder}
+                  value={passwords[f.key]}
+                  onChange={e => setPasswords(p => ({ ...p, [f.key]: e.target.value }))}
+                />
+              </div>
+            ))}
+            <button type="submit" style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 20px', cursor: 'pointer', fontSize: 13, fontWeight: 600, alignSelf: 'flex-start' }}>
+              Change Password
             </button>
-          ))}
-        </motion.div>
+          </form>
+        </Section>
+      )}
 
-        {/* Content */}
-        <motion.div key={active} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}
-          className="lg:col-span-3 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 space-y-5">
-
-          {active === 'account' && (
-            <>
-              <h2 className="font-bold text-gray-900 dark:text-white text-lg pb-3 border-b border-gray-100 dark:border-gray-800">Account Information</h2>
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-                <img src={user?.photoURL || ('https://ui-avatars.com/api/?name=' + (user?.displayName || 'User') + '&background=7c3aed&color=fff&size=64')}
-                  alt="avatar" className="w-14 h-14 rounded-xl object-cover ring-2 ring-primary shadow" />
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">{user?.displayName || 'User'}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-                  <button className="mt-1.5 text-xs font-semibold text-primary hover:underline">Change Photo</button>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { label: 'Display Name', key: 'displayName', type: 'text'  },
-                  { label: 'Email',        key: 'email',       type: 'email' },
-                  { label: 'Phone',        key: 'phone',       type: 'tel'   },
-                  { label: 'Location',     key: 'location',    type: 'text'  },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label className={labelClass}>{f.label}</label>
-                    <input type={f.type} className={inputClass} value={account[f.key]}
-                      onChange={e => setAccount(p => ({...p, [f.key]: e.target.value}))} />
-                  </div>
-                ))}
-                <div className="sm:col-span-2">
-                  <label className={labelClass}>Bio</label>
-                  <textarea rows={3} className={inputClass + ' resize-none'} value={account.bio}
-                    onChange={e => setAccount(p => ({...p, bio: e.target.value}))} />
-                </div>
-              </div>
-            </>
-          )}
-
-          {active === 'password' && (
-            <>
-              <h2 className="font-bold text-gray-900 dark:text-white text-lg pb-3 border-b border-gray-100 dark:border-gray-800">Change Password</h2>
-              <div className="space-y-4">
-                {[
-                  { label: 'Current Password', key: 'current' },
-                  { label: 'New Password',      key: 'new'     },
-                  { label: 'Confirm Password',  key: 'confirm' },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label className={labelClass}>{f.label}</label>
-                    <div className="relative">
-                      <input type={showPass[f.key] ? 'text' : 'password'} className={inputClass + ' pr-10'} placeholder="••••••••" />
-                      <button onClick={() => setShowPass(p => ({...p, [f.key]: !p[f.key]}))}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                        {showPass[f.key] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30">
-                  <p className="text-xs text-blue-700 dark:text-blue-400 font-medium">Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.</p>
-                </div>
-              </div>
-            </>
-          )}
-
-          {active === 'notifications' && (
-            <>
-              <h2 className="font-bold text-gray-900 dark:text-white text-lg pb-3 border-b border-gray-100 dark:border-gray-800">Notification Preferences</h2>
-              <div className="space-y-3">
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email Notifications</p>
-                {[
-                  { key: 'emailNewBid',   label: 'New bid on your job',         desc: 'Get notified when someone bids' },
-                  { key: 'emailMessages', label: 'New messages',                desc: 'Get notified on new messages' },
-                  { key: 'emailUpdates',  label: 'Platform updates',            desc: 'News and feature announcements' },
-                ].map(item => (
-                  <div key={item.key} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.label}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
-                    </div>
-                    <Toggle checked={notifications[item.key]} onChange={v => setNotifications(p => ({...p, [item.key]: v}))} />
-                  </div>
-                ))}
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pt-2">Push Notifications</p>
-                {[
-                  { key: 'pushNewBid',    label: 'New bids',       desc: 'Browser push for new bids' },
-                  { key: 'pushMessages',  label: 'Messages',       desc: 'Browser push for messages' },
-                  { key: 'weeklyDigest',  label: 'Weekly digest',  desc: 'Weekly activity summary' },
-                ].map(item => (
-                  <div key={item.key} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.label}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
-                    </div>
-                    <Toggle checked={notifications[item.key]} onChange={v => setNotifications(p => ({...p, [item.key]: v}))} />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {active === 'appearance' && (
-            <>
-              <h2 className="font-bold text-gray-900 dark:text-white text-lg pb-3 border-b border-gray-100 dark:border-gray-800">Appearance</h2>
-              <div>
-                <p className={labelClass}>Theme</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: 'Light Mode', value: 'light', icon: Sun  },
-                    { label: 'Dark Mode',  value: 'dark',  icon: Moon },
-                  ].map(t => (
-                    <button key={t.value} onClick={() => theme !== t.value && toggleTheme()}
-                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-                        theme === t.value
-                          ? 'border-primary bg-purple-50 dark:bg-purple-900/20'
-                          : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-gray-300'
-                      }`}>
-                      <t.icon className={`w-5 h-5 ${theme === t.value ? 'text-primary' : 'text-gray-400'}`} />
-                      <span className={`text-sm font-semibold ${theme === t.value ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}>{t.label}</span>
-                      {theme === t.value && <Check className="w-4 h-4 text-primary ml-auto" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className={labelClass}>Accent Color</p>
-                <div className="flex gap-3 mt-1">
-                  {['#7c3aed', '#2563eb', '#059669', '#dc2626', '#d97706', '#db2777'].map(color => (
-                    <button key={color} className="w-9 h-9 rounded-xl shadow-sm border-2 border-white dark:border-gray-700 hover:scale-110 transition-transform" style={{ backgroundColor: color }} />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {active === 'privacy' && (
-            <>
-              <h2 className="font-bold text-gray-900 dark:text-white text-lg pb-3 border-b border-gray-100 dark:border-gray-800">Privacy Settings</h2>
-              <div className="space-y-3">
-                {[
-                  { key: 'profilePublic', label: 'Public Profile',       desc: 'Allow others to view your profile' },
-                  { key: 'showEmail',     label: 'Show Email Address',   desc: 'Display email on your public profile' },
-                  { key: 'showPhone',     label: 'Show Phone Number',    desc: 'Display phone on your public profile' },
-                  { key: 'showOnline',    label: 'Show Online Status',   desc: 'Let others see when you are active' },
-                ].map(item => (
-                  <div key={item.key} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.label}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
-                    </div>
-                    <Toggle checked={privacy[item.key]} onChange={v => setPrivacy(p => ({...p, [item.key]: v}))} />
-                  </div>
-                ))}
-                <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                  <div className="p-4 rounded-xl border-2 border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/10">
-                    <p className="text-sm font-bold text-red-700 dark:text-red-400 mb-1">Delete Account</p>
-                    <p className="text-xs text-red-500 mb-3">This action is permanent and cannot be undone. All your data will be removed.</p>
-                    <button className="px-4 py-2 text-xs font-semibold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors">
-                      Delete My Account
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </motion.div>
+      {/* Danger Zone */}
+      <div style={{ background: '#161b27', borderRadius: 16, border: '1px solid #ef444444', padding: 24 }}>
+        <h3 style={{ color: '#f87171', fontSize: 15, fontWeight: 700, margin: '0 0 8px' }}>Danger Zone</h3>
+        <p style={{ color: '#8b949e', fontSize: 13, margin: '0 0 16px' }}>These actions are irreversible. Please be careful.</p>
+        <button
+          onClick={() => confirm('Are you sure you want to delete your account? This cannot be undone.')}
+          style={{ background: '#ef444422', color: '#f87171', border: '1px solid #ef444444', borderRadius: 10, padding: '9px 20px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+          Delete Account
+        </button>
       </div>
     </div>
   );
-};
-
-export default DashboardSettings;
+}
