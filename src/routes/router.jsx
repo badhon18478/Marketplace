@@ -1,121 +1,189 @@
-import { createBrowserRouter } from 'react-router';
-// import MainLayout from '../layouts/MainLayout';
+import { createBrowserRouter } from 'react-router-dom';
+import { useContext } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { AuthContext } from '../AuthContext';
+
+// ── Pages ──────────────────────────────────────────────────────
 import Home from '../pages/Home';
-
-import Login from '../pages/Login';
-import Register from '../pages/Register/Register';
-import MyProfile from '../pages/MyProfile';
-import UpdateProfile from '../pages/UpdateProfile';
-// import UpdateProfile from '../pages/UpdateProfile';
-import NotFound from '../pages/Error';
-import PrivateRoute from '../contexts/PrivateRoute';
-
-import ForgetPassword from '../pages/ForgetPassword';
-import AddJob from '../pages/AddJob';
+// import Login from '../pages/Auth/Login';
+// import Register from '../pages/Auth/Register';
 import AllJobs from '../pages/AllJobs';
 import JobDetails from '../pages/JobDetails';
-import MyAcceptedTasks from '../pages/MyAcceptedTasks';
-import MyAddedJobs from '../pages/MyAddedJobs';
-import UpdateJob from '../pages/UpdateJob';
+import AddJob from '../pages/AddJob';
+// import EditJob from '../pages/EditJob';
+import Contact from '../pages/Contact';
+import Blog from '../pages/Blog';
+// import BlogDetails from '../pages/BlogDetails';
+import About from '../pages/About';
+import NotFound from '../pages/Error';
 
+// ── User Dashboard ─────────────────────────────────────────────
+import UserDashboard from '../pages/Dashboard/UserDashboard';
+import UserOverview from '../pages/Dashboard/UserOverview';
+import MyJobs from '../pages/Dashboard/MyJobs';
+import AcceptedTasks from '../pages/Dashboard/AcceptedTasks';
+import ProfilePage from '../pages/Dashboard/ProfilePage';
+import DashboardSettings from '../pages/Dashboard/DashboardSettings';
+
+// ── Admin Dashboard ────────────────────────────────────────────
+import AdminDashboard from '../pages/Dashboard/AdminDashboard';
+import AdminOverview from '../pages/Dashboard/AdminOverview';
+import ManageUsers from '../pages/Dashboard/ManageUsers';
+import ManageJobs from '../pages/Dashboard/ManageJobs';
+import ManageBlogs from '../pages/Dashboard/ManageBlogs';
+import ContactMessages from '../pages/Dashboard/ContactMessages';
+import AdminReports from '../pages/Dashboard/AdminReports';
+// import AdminSettings from '../pages/Dashboard/AdminSettings';
+import Login from '../pages/Login';
+import Register from '../pages/Register/Register';
+
+// ============================================================
+// ── Protected Route (auth required) ─────────────────────────
+// ============================================================
+const PrivateRoute = ({ children }) => {
+  const { user, loading } = useContext(AuthContext);
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+
+// ============================================================
+// ── Admin Route (admin role required) ───────────────────────
+// ============================================================
+const AdminRoute = ({ children }) => {
+  const { user, loading, isAdmin } = useContext(AuthContext);
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isAdmin) return <Navigate to="/dashboard/overview" replace />;
+
+  return children;
+};
+
+// ============================================================
+// ── Router ───────────────────────────────────────────────────
+// ============================================================
 const router = createBrowserRouter([
+  // ── Public Routes ─────────────────────────────────────────
   {
     path: '/',
-    element: <Home></Home>,
+    element: <Home />,
   },
-
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
+    path: '/register',
+    element: <Register />,
+  },
   {
     path: '/allJobs',
-    element: (
-      <PrivateRoute>
-        <AllJobs />,
-      </PrivateRoute>
-    ),
+    element: <AllJobs />,
   },
   {
-    path: '/allJobs/:id',
-    element: (
-      <PrivateRoute>
-        <JobDetails></JobDetails>
-      </PrivateRoute>
-    ),
+    path: '/jobs/:id',
+    element: <JobDetails />,
   },
   {
-    path: '/my-accepted-tasks',
-    element: (
-      <PrivateRoute>
-        <MyAcceptedTasks></MyAcceptedTasks>
-      </PrivateRoute>
-    ),
+    path: '/contact',
+    element: <Contact />,
   },
   {
-    path: '/my-accepted-tasks',
-    element: (
-      <PrivateRoute>
-        <MyAcceptedTasks></MyAcceptedTasks>
-      </PrivateRoute>
-    ),
+    path: '/blog',
+    element: <Blog />,
   },
+  // {
+  //   path: '/blog/:id',
+  //   element: <BlogDetails />,
+  // },
   {
-    path: '/UpdateJob/:id',
-    element: (
-      <PrivateRoute>
-        <UpdateJob></UpdateJob>
-      </PrivateRoute>
-    ),
+    path: '/about',
+    element: <About />,
   },
-  {
-    path: '/MyAddedJobs',
-    element: (
-      <PrivateRoute>
-        <MyAddedJobs></MyAddedJobs>
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: '/update-profile',
-    element: (
-      <PrivateRoute>
-        <UpdateProfile></UpdateProfile>,
-      </PrivateRoute>
-    ),
-  },
-  {
-    path: '/MyProfile',
-    element: (
-      <PrivateRoute>
-        <MyProfile></MyProfile>,
-      </PrivateRoute>
-    ),
-  },
+
+  // ── Protected: Add/Edit Job ────────────────────────────────
   {
     path: '/add-job',
     element: (
       <PrivateRoute>
-        <AddJob></AddJob>
+        <AddJob />
       </PrivateRoute>
     ),
   },
+  // {
+  //   path: '/edit-job/:id',
+  //   element: (
+  //     <PrivateRoute>
+  //       <EditJob />
+  //     </PrivateRoute>
+  //   ),
+  // },
+
+  // ── User Dashboard ─────────────────────────────────────────
   {
-    path: '/forget-password',
-    element: <ForgetPassword></ForgetPassword>,
+    path: '/dashboard',
+    element: (
+      <PrivateRoute>
+        <UserDashboard />
+      </PrivateRoute>
+    ),
+    children: [
+      { index: true, element: <Navigate to="overview" replace /> },
+      { path: 'overview', element: <UserOverview /> },
+      { path: 'my-jobs', element: <MyJobs /> },
+      { path: 'accepted-tasks', element: <AcceptedTasks /> },
+      { path: 'profile', element: <ProfilePage /> },
+      { path: 'settings', element: <DashboardSettings /> },
+    ],
   },
+
+  // ── Admin Dashboard ────────────────────────────────────────
   {
-    path: '/Register',
-    element: <Register></Register>,
+    path: '/admin',
+    element: (
+      <AdminRoute>
+        <AdminDashboard />
+      </AdminRoute>
+    ),
+    children: [
+      { index: true, element: <Navigate to="overview" replace /> },
+      { path: 'overview', element: <AdminOverview /> },
+      { path: 'manage-users', element: <ManageUsers /> },
+      { path: 'manage-jobs', element: <ManageJobs /> },
+      { path: 'manage-blogs', element: <ManageBlogs /> },
+      { path: 'contacts', element: <ContactMessages /> },
+      { path: 'reports', element: <AdminReports /> },
+      // { path: 'settings', element: <AdminSettings /> },
+    ],
   },
-  {
-    path: '/Login',
-    element: <Login></Login>,
-  },
-  {
-    path: '/forget-password',
-    element: <ForgetPassword></ForgetPassword>,
-  },
+
+  // ── 404 ────────────────────────────────────────────────────
   {
     path: '*',
     element: <NotFound />,
   },
 ]);
 
+export { PrivateRoute, AdminRoute };
 export default router;

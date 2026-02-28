@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   ChevronDown,
+  User,
 } from 'lucide-react';
 import { AuthContext } from '../../AuthContext';
 
@@ -40,6 +41,9 @@ const Navbar = () => {
     ...(user
       ? [
           { path: '/add-job', label: 'Add a Job' },
+          { path: '/about', label: 'About Us' },
+          { path: '/contact', label: 'Contact Us' },
+          { path: '/blog', label: 'Blog' },
           { path: '/my-accepted-tasks', label: 'My Accepted Tasks' },
         ]
       : []),
@@ -173,9 +177,17 @@ const Navbar = () => {
                         <Briefcase className="w-5 h-5 text-primary" />
                         <span className="font-medium">My Posted Jobs</span>
                       </Link>
+                      <Link
+                        to="/profile-page"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-purple-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors duration-200"
+                      >
+                        <User className="w-5 h-5 text-primary" />
+                        <span className="font-medium">Profile Page </span>
+                      </Link>
 
                       <Link
-                        to="/my-accepted-tasks"
+                        to="/dashboard"
                         onClick={() => setProfileDropdownOpen(false)}
                         className="flex items-center gap-3 px-4 py-3 hover:bg-purple-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors duration-200"
                       >

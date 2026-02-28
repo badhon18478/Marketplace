@@ -1,21 +1,18 @@
-// ============================================
-// FILE: src/pages/Register.jsx
-// ============================================
-
 import { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
 import toast from 'react-hot-toast';
 import { FcGoogle } from 'react-icons/fc';
 import { Eye, EyeOff, Mail, Lock, User, Image, UserPlus } from 'lucide-react';
 import Navbar from '../../components/Navber/Navbar';
 import Footer from '../../components/Footer';
 import { AuthContext } from '../../AuthContext';
+import axios from 'axios';
+
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const Register = () => {
   const { createUser, signInWithGoogle, updateUserProfile } =
     useContext(AuthContext);
-
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -29,33 +26,32 @@ const Register = () => {
   const [errors, setErrors] = useState({});
 
   const handleChange = e => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    // Clear error for this field
-    if (errors[e.target.name]) {
-      setErrors({
-        ...errors,
-        [e.target.name]: '',
-      });
-    }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: '' });
   };
 
   const validatePassword = password => {
-    const errors = [];
+    const errs = [];
+    if (password.length < 6)
+      errs.push('Password must be at least 6 characters long');
+    if (!/[A-Z]/.test(password))
+      errs.push('Password must contain at least one uppercase letter');
+    if (!/[a-z]/.test(password))
+      errs.push('Password must contain at least one lowercase letter');
+    return errs;
+  };
 
-    if (password.length < 6) {
-      errors.push('Password must be at least 6 characters long');
+  // ── Save user to MongoDB ─────────────────────────────────────
+  const saveUserToDB = async (name, email, photoURL) => {
+    try {
+      await axios.post(`${BASE_URL}/api/users`, {
+        name,
+        email,
+        photoURL: photoURL || '',
+      });
+    } catch {
+      // silently ignore duplicate user error
     }
-    if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter');
-    }
-    if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter');
-    }
-
-    return errors;
   };
 
   const handleRegister = async e => {
@@ -63,7 +59,6 @@ const Register = () => {
     setLoading(true);
     setErrors({});
 
-    // Validate password
     const passwordErrors = validatePassword(formData.password);
     if (passwordErrors.length > 0) {
       setErrors({ password: passwordErrors.join('. ') });
@@ -73,25 +68,19 @@ const Register = () => {
     }
 
     try {
-      // Create user
       await createUser(formData.email, formData.password);
-
-      // Update profile
       await updateUserProfile(formData.name, formData.photoURL);
-
+      await saveUserToDB(formData.name, formData.email, formData.photoURL);
       toast.success('Registration successful! Welcome! 🎉');
       navigate('/');
     } catch (error) {
-      console.error('Registration error:', error);
-      if (error.code === 'auth/email-already-in-use') {
+      if (error.code === 'auth/email-already-in-use')
         toast.error('This email is already registered');
-      } else if (error.code === 'auth/invalid-email') {
+      else if (error.code === 'auth/invalid-email')
         toast.error('Invalid email address');
-      } else if (error.code === 'auth/weak-password') {
+      else if (error.code === 'auth/weak-password')
         toast.error('Password is too weak');
-      } else {
-        toast.error('Registration failed. Please try again.');
-      }
+      else toast.error('Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -99,11 +88,12 @@ const Register = () => {
 
   const handleGoogleRegister = async () => {
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      const user = result?.user;
+      if (user) await saveUserToDB(user.displayName, user.email, user.photoURL);
       toast.success('Registration successful! Welcome! 🎉');
       navigate('/');
-    } catch (error) {
-      console.error('Google registration error:', error);
+    } catch {
       toast.error('Google registration failed. Please try again.');
     }
   };
@@ -111,13 +101,12 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <Navbar />
-      <title>Create Account</title>
       <div className="flex items-center justify-center px-4 py-12">
         <div className="max-w-md w-full">
           {/* Card */}
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className=" bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:from-primary/90 hover:to-blue-600/90 transition-all duration-200 hover:shadow-xl px-8 py-10 text-center">
+            <div className="bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:from-primary/90 hover:to-blue-600/90 transition-all duration-200 hover:shadow-xl px-8 py-10 text-center">
               <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <UserPlus className="w-10 h-10 text-white" />
               </div>
@@ -130,7 +119,7 @@ const Register = () => {
             {/* Form */}
             <div className="p-8">
               <form onSubmit={handleRegister} className="space-y-5">
-                {/* Name Field */}
+                {/* Name */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Full Name
@@ -149,7 +138,7 @@ const Register = () => {
                   </div>
                 </div>
 
-                {/* Email Field */}
+                {/* Email */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Email Address
@@ -168,7 +157,7 @@ const Register = () => {
                   </div>
                 </div>
 
-                {/* Photo URL Field */}
+                {/* Photo URL */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Photo URL
@@ -186,7 +175,7 @@ const Register = () => {
                   </div>
                 </div>
 
-                {/* Password Field */}
+                {/* Password */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Password
@@ -223,41 +212,37 @@ const Register = () => {
                       {errors.password}
                     </p>
                   )}
+
+                  {/* Password Hints */}
                   <div className="mt-2 space-y-1">
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
-                      <span
-                        className={
-                          formData.password.length >= 6 ? 'text-green-500' : ''
-                        }
+                    {[
+                      {
+                        label: 'At least 6 characters',
+                        pass: formData.password.length >= 6,
+                      },
+                      {
+                        label: 'One uppercase letter',
+                        pass: /[A-Z]/.test(formData.password),
+                      },
+                      {
+                        label: 'One lowercase letter',
+                        pass: /[a-z]/.test(formData.password),
+                      },
+                    ].map((hint, i) => (
+                      <p
+                        key={i}
+                        className="text-xs text-gray-500 flex items-center gap-1"
                       >
-                        ✓
-                      </span>
-                      At least 6 characters
-                    </p>
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
-                      <span
-                        className={
-                          /[A-Z]/.test(formData.password)
-                            ? 'text-green-500'
-                            : ''
-                        }
-                      >
-                        ✓
-                      </span>
-                      One uppercase letter
-                    </p>
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
-                      <span
-                        className={
-                          /[a-z]/.test(formData.password)
-                            ? 'text-green-500'
-                            : ''
-                        }
-                      >
-                        ✓
-                      </span>
-                      One lowercase letter
-                    </p>
+                        <span
+                          className={
+                            hint.pass ? 'text-green-500 font-bold' : ''
+                          }
+                        >
+                          ✓
+                        </span>
+                        {hint.label}
+                      </p>
+                    ))}
                   </div>
                 </div>
 
@@ -268,12 +253,12 @@ const Register = () => {
                   className={`w-full py-3 rounded-lg font-bold text-white transition-all transform hover:scale-105 ${
                     loading
                       ? 'bg-gray-400 cursor-not-allowed'
-                      : 'text-white bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:from-primary/90 hover:to-blue-600/90 transition-all duration-200 shadow-lg hover:shadow-xl'
+                      : 'bg-gradient-to-r from-primary to-blue-600 rounded-xl hover:from-primary/90 hover:to-blue-600/90 transition-all duration-200 shadow-lg hover:shadow-xl'
                   }`}
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white" />
                       Creating Account...
                     </span>
                   ) : (
@@ -285,7 +270,7 @@ const Register = () => {
               {/* Divider */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
+                  <div className="w-full border-t border-gray-300" />
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-4 bg-white text-gray-500 font-semibold">
@@ -294,7 +279,7 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Google Register */}
+              {/* Google */}
               <button
                 onClick={handleGoogleRegister}
                 className="w-full flex items-center justify-center gap-3 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all font-semibold text-gray-700"
@@ -317,7 +302,6 @@ const Register = () => {
           </div>
         </div>
       </div>
-
       <Footer />
     </div>
   );
